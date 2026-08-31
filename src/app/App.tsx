@@ -413,11 +413,12 @@ function Sidebar({
       {/* Brand */}
       <div className="px-5 py-5 border-b border-[#26313D]">
         <div className="flex items-center gap-2.5 mb-1.5">
-          <div
-            className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #35C759 0%, #22a844 100%)" }}
-          >
-            <Shield size={13} className="text-[#0B0F14]" />
+          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+            <img
+              src="/PheNex-img.png.jpeg"
+              alt="PheNex"
+              className="w-8 h-8 object-contain"
+            />
           </div>
           <span className="text-[15px] font-bold text-[#F5F7FA] tracking-tight">PheNex</span>
         </div>
@@ -652,6 +653,10 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
 // ─── SCREEN 2: LIVE SURVEILLANCE ──────────────────────────────────────────────
 
 function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
+  const [drawingFence, setDrawingFence] = useState(false);
+  const [fencePoints, setFencePoints] = useState<{ x: number; y: number }[]>([]);
+  const [fenceAlert, setFenceAlert] = useState(false);
+  const [fenceDrawn, setFenceDrawn] = useState(false);
   return (
     <div className="flex gap-4 p-4 h-full overflow-hidden">
       <Card className="flex-[3] overflow-hidden flex flex-col min-w-0 min-h-0">
@@ -666,74 +671,156 @@ function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
           </div>
         </CardHeader>
         <div className="flex-1 overflow-hidden min-h-0">
-          <CCTVFeed showPerson />
-        </div>
-      </Card>
+          <div
+            className="relative z=10 flex-1 overflow-hidden min-h-0 cursor-crosshair"
+            onPointerDown={(e) => {
+              if (!drawingFence) return;
+              if (fencePoints.length >= 2) return;
 
-      <div className="flex flex-col gap-4 w-64 flex-shrink-0 min-h-0">
-        <Card>
-          <CardHeader>
-            <Label>Detection</Label>
-            <Eye size={13} className="text-[#35C759]" />
-          </CardHeader>
-          <div className="p-4 space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-md bg-[#35C759]/5 border border-[#35C759]/20">
-              <div className="w-8 h-8 rounded bg-[#35C759]/15 flex items-center justify-center flex-shrink-0">
-                <User size={15} className="text-[#35C759]" />
-              </div>
-              <div>
-                <div className="text-[13px] font-bold text-[#F5F7FA]">PERSON #07</div>
-                <div className="text-[11px] text-[#35C759] font-semibold">94% CONFIDENCE</div>
-              </div>
+              const rect = e.currentTarget.getBoundingClientRect();
+
+              const point = {
+                x: ((e.clientX - rect.left) / rect.width) * 100,
+                y: ((e.clientY - rect.top) / rect.height) * 100,
+              };
+
+              setFencePoints((prev) => [...prev, point]);
+
+              if (fencePoints.length === 1) {
+                setDrawingFence(false);
+              }
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0">
+              <CCTVFeed showPerson />
             </div>
-            <div className="space-y-2.5">
-              {[
-                { label: "Object Type", val: "PERSON" },
-                { label: "Camera", val: "CAM-01" },
-                { label: "Timestamp", val: "02:14:32" },
-                { label: "Status", val: "ACTIVE" },
-              ].map(({ label, val }) => (
-                <div key={label} className="flex justify-between items-center">
-                  <span className="text-[11px] text-[#8B98A7]">{label}</span>
-                  <span className="text-[11px] font-semibold text-[#F5F7FA]">{val}</span>
+            {fencePoints.length > 0 && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                {fencePoints.length === 2 && (
+                  <line
+                    x1={`${fencePoints[0].x}%`}
+                    y1={`${fencePoints[0].y}%`}
+                    x2={`${fencePoints[1].x}%`}
+                    y2={`${fencePoints[1].y}%`}
+                    stroke="#00F0FF"
+                    strokeWidth="4"
+                    strokeDasharray="10 6"
+                  />
+
+
+                )}
+
+                {fencePoints.map((point, index) => (
+                  <circle
+                    key={index}
+                    cx={`${point.x}%`}
+                    cy={`${point.y}%`}
+                    r="8"
+                    fill="#00F0FF"
+                  />
+                ))}
+              </svg>
+            )}
+            {fenceAlert && (
+              <div className="pointer-events-none absolute top-4 right-4 z-50">
+                <div className="rounded-lg border border-red-500/60 bg-red-500/20 px-5 py-3 shadow-lg backdrop-blur-md">
+                  <div className="text-sm font-bold tracking-wider text-red-400">
+                    🚨 FENCE BREACH DETECTED
+                  </div>
+
+                  <div className="mt-1 text-xs text-red-300/80">
+                    Unauthorized crossing detected
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <Label>AI Tracking</Label>
-          </CardHeader>
-          <div className="p-4 space-y-3">
-            <div className="p-3 rounded bg-[#161E27] border border-[#26313D]">
-              <div className="text-[10px] text-[#576475] mb-1 font-semibold tracking-wide">
-                AI ENGINE
               </div>
-              <div className="text-[12px] font-semibold text-[#35C759]">Tracking Initiated</div>
-              <div className="text-[10px] text-[#8B98A7] mt-0.5">Object locked at 94% confidence</div>
-            </div>
-            <NextBtn
-              label="Continue to Object Tracking"
-              onClick={() => setScreen("tracking")}
-            />
-          </div>
-        </Card>
+            )}
 
-        <Card className="flex-1">
-          <CardHeader>
-            <Label>System Health</Label>
-            <CheckCircle size={13} className="text-[#35C759]" />
-          </CardHeader>
-          <div className="p-4 space-y-3">
-            <HealthRow label="CCTV Stream" icon={Camera} />
-            <HealthRow label="AI Engine" icon={Cpu} />
-            <HealthRow label="Event Engine" icon={Activity} />
+            {drawingFence && (
+              <div className="absolute top-3 left-3 rounded bg-[#00F0FF]/20 px-3 py-1 text-xs font-bold text-[#00F0FF]">
+                CLICK ON CAMERA TO DRAW FENCE
+              </div>
+            )}
           </div>
-        </Card>
-      </div>
-    </div>
+        </div>
+
+        <button
+          onClick={() => setDrawingFence(!drawingFence)}
+          className="mt-3 w-full rounded-lg border border-[#00F0FF] bg-[#00F0FF]/10 px-4 py-2 text-sm font-bold text-[#00F0FF]"
+        >
+          {drawingFence ? "DRAWING... CLICK ON CAMERA" : "DRAW VIRTUAL FENCE"}
+        </button>
+        <button
+          onClick={() => setFenceAlert(true)}
+          className="mt-2 w-full rounded-lg border border-red-500 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-400"
+        >
+          TEST FENCE BREACH
+        </button>
+
+        <div className="flex flex-col gap-4 w-64 flex-shrink-0 min-h-0">
+          <Card>
+            <CardHeader>
+              <Label>Detection</Label>
+              <Eye size={13} className="text-[#35C759]" />
+            </CardHeader>
+            <div className="p-4 space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-md bg-[#35C759]/5 border border-[#35C759]/20">
+                <div className="w-8 h-8 rounded bg-[#35C759]/15 flex items-center justify-center flex-shrink-0">
+                  <User size={15} className="text-[#35C759]" />
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-[#F5F7FA]">PERSON #07</div>
+                  <div className="text-[11px] text-[#35C759] font-semibold">94% CONFIDENCE</div>
+                </div>
+              </div>
+              <div className="space-y-2.5">
+                {[
+                  { label: "Object Type", val: "PERSON" },
+                  { label: "Camera", val: "CAM-01" },
+                  { label: "Timestamp", val: "02:14:32" },
+                  { label: "Status", val: "ACTIVE" },
+                ].map(({ label, val }) => (
+                  <div key={label} className="flex justify-between items-center">
+                    <span className="text-[11px] text-[#8B98A7]">{label}</span>
+                    <span className="text-[11px] font-semibold text-[#F5F7FA]">{val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Label>AI Tracking</Label>
+            </CardHeader>
+            <div className="p-4 space-y-3">
+              <div className="p-3 rounded bg-[#161E27] border border-[#26313D]">
+                <div className="text-[10px] text-[#576475] mb-1 font-semibold tracking-wide">
+                  AI ENGINE
+                </div>
+                <div className="text-[12px] font-semibold text-[#35C759]">Tracking Initiated</div>
+                <div className="text-[10px] text-[#8B98A7] mt-0.5">Object locked at 94% confidence</div>
+              </div>
+              <NextBtn
+                label="Continue to Object Tracking"
+                onClick={() => setScreen("tracking")}
+              />
+            </div>
+          </Card>
+
+          <Card className="flex-1">
+            <CardHeader>
+              <Label>System Health</Label>
+              <CheckCircle size={13} className="text-[#35C759]" />
+            </CardHeader>
+            <div className="p-4 space-y-3">
+              <HealthRow label="CCTV Stream" icon={Camera} />
+              <HealthRow label="AI Engine" icon={Cpu} />
+              <HealthRow label="Event Engine" icon={Activity} />
+            </div>
+          </Card>
+        </div>
+      </Card >
+    </div >
   );
 }
 
@@ -761,22 +848,11 @@ function ObjectTracking({ setScreen }: { setScreen: (s: Screen) => void }) {
       <div className="flex flex-col gap-4 w-64 flex-shrink-0 min-h-0">
         <Card>
           <CardHeader>
-            <Label>Track — PERSON #07</Label>
-            <Crosshair size={13} className="text-[#35C759]" />
+            <Label>Tracking Info</Label>
           </CardHeader>
-          <div className="p-4 space-y-2.5">
-            {[
-              { label: "Object Type", val: "PERSON" },
-              { label: "Track ID", val: "#07" },
-              { label: "Confidence", val: "94%" },
-              { label: "Track Duration", val: "00:14" },
-              { label: "Camera", val: "CAM-01" },
-            ].map(({ label, val }) => (
-              <div key={label} className="flex justify-between items-center">
-                <span className="text-[11px] text-[#8B98A7]">{label}</span>
-                <span className="text-[11px] font-semibold text-[#F5F7FA]">{val}</span>
-              </div>
-            ))}
+          <div className="p-4">
+
+
           </div>
         </Card>
 
@@ -1188,7 +1264,10 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2500);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -1205,22 +1284,26 @@ export default function App() {
     year: "numeric",
   });
 
+
   return (
     <>
-      {
-        showSplash && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F14]">
-            <h1 className="text-4xl font-bold text-white">PheNex</h1>
-          </div>
-        )
-      }
+
+      {showSplash && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F14]">
+          <h1 className="text-4xl font-bold text-white">PheNex</h1>
+        </div>
+      )}
+
+
       <div
         className="flex h-screen overflow-hidden"
-        style={{ background: "#0B0F14", color: "#F5F7FA", fontFamily: "'Inter', sans-serif" }}
+        style={{ background: "#0B0F14", color: "#F5F7FA", fontFamily: "Inter, sans-serif" }}
       >
         <Sidebar screen={screen} setScreen={setScreen} />
+
         <div className="flex flex-col flex-1 min-w-0">
           <TopBar screen={screen} timeStr={timeStr} dateStr={dateStr} />
+
           <div className="flex-1 overflow-hidden min-h-0">
             {screen === "command" && <CommandCenter setScreen={setScreen} />}
             {screen === "surveillance" && <LiveSurveillance setScreen={setScreen} />}
