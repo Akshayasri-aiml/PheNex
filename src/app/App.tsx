@@ -6,7 +6,7 @@ import {
   Eye, MapPin, Crosshair,
 } from "lucide-react";
 
-type Screen = "command" | "surveillance" | "tracking" | "breach" | "alert" | "details";
+type Screen = "command" | "surveillance" | "tracking" | "breach" | "alert" | "details" | "settings" | "multi-camera";
 
 // ─── ATOMS ────────────────────────────────────────────────────────────────────
 
@@ -389,16 +389,21 @@ const NAV = [
   { id: "command" as Screen, label: "Command Center", Icon: LayoutDashboard },
   { id: "surveillance" as Screen, label: "Live Surveillance", Icon: Video },
   { id: "alert" as Screen, label: "Events", Icon: Bell },
-  { id: "details" as Screen, label: "System Health", Icon: Activity },
+  { id: "multi-camera" as Screen, label: "System Health", Icon: Activity },
 ];
 
 function Sidebar({
   screen,
   setScreen,
+  showDashboard,
+  onCloseDashboard,
 }: {
   screen: Screen;
   setScreen: (s: Screen) => void;
+  showDashboard: boolean;
+  onCloseDashboard: () => void;
 }) {
+
   const activeNav =
     screen === "command"
       ? "command"
@@ -415,12 +420,12 @@ function Sidebar({
         <div className="flex items-center gap-2.5 mb-1.5">
           <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
             <img
-              src="/PheNex-img.png.jpeg"
-              alt="PheNex"
+              src="/favicon.svg"
+              alt="AVEIS"
               className="w-8 h-8 object-contain"
             />
           </div>
-          <span className="text-[15px] font-bold text-[#F5F7FA] tracking-tight">PheNex</span>
+          <span className="text-[15px] font-bold text-[#F5F7FA] tracking-tight">AVEIS</span>
         </div>
         <p className="text-[8px] font-semibold tracking-[1.8px] text-[#576475] uppercase leading-snug pl-[34px]">
           Intelligent Border
@@ -456,7 +461,10 @@ function Sidebar({
           <StatusDot color="#35C759" pulse />
           <span className="text-[11px] font-semibold text-[#35C759]">System Online</span>
         </div>
-        <button className="flex items-center gap-2 text-[11px] text-[#8B98A7] hover:text-[#F5F7FA] transition-colors cursor-pointer">
+        <button
+          onClick={() => setScreen("settings")}
+          className="flex items-center gap-2 text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer"
+        >
           <Settings size={12} />
           Settings
         </button>
@@ -474,6 +482,8 @@ const TITLES: Record<Screen, string> = {
   breach: "Virtual Fence Breach",
   alert: "Security Alert",
   details: "Event Details",
+  settings: "Settings",
+  "multi-camera": "Multi-Camera View",
 };
 
 function TopBar({
@@ -489,7 +499,7 @@ function TopBar({
     <div className="flex items-center justify-between px-6 h-14 border-b border-[#26313D] bg-[#111820] flex-shrink-0">
       <div className="flex items-center gap-3">
         <span className="text-[10px] font-bold tracking-[2.5px] text-[#576475] uppercase">
-          PheNex
+          AVEIS
         </span>
         <span className="text-[#26313D]">/</span>
         <span className="text-[12px] font-semibold text-[#F5F7FA] tracking-widest uppercase">
@@ -615,18 +625,23 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
           </div>
         </Card>
 
-        <Card className="flex-1 flex flex-col min-h-0">
-          <CardHeader>
-            <Label>System Health</Label>
-            <CheckCircle size={13} className="text-[#35C759]" />
-          </CardHeader>
-          <div className="p-4 space-y-3 flex-1">
-            <HealthRow label="CCTV Stream" icon={Camera} />
-            <HealthRow label="AI Engine" icon={Cpu} />
-            <HealthRow label="Event Engine" icon={Activity} />
-            <HealthRow label="Database" icon={Database} />
-          </div>
-        </Card>
+        <div
+          onClick={() => setScreen("multi-camera")}
+          className="flex-1 flex flex-col min-h-0 cursor-pointer"
+        >
+          <Card>
+            <CardHeader>
+              <Label>System Health</Label>
+              <CheckCircle size={13} className="text-[#35C759]" />
+            </CardHeader>
+            <div className="p-4 space-y-3 flex-1">
+              <HealthRow label="CCTV Stream" icon={Camera} />
+              <HealthRow label="AI Engine" icon={Cpu} />
+              <HealthRow label="Event Engine" icon={Activity} />
+              <HealthRow label="Database" icon={Database} />
+            </div>
+          </Card>
+        </div>
 
         <Card className="flex-shrink-0">
           <CardHeader>
@@ -649,6 +664,351 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
     </div>
   );
 }
+function MultiCameraGrid({ setScreen }: { setScreen: (s: Screen) => void }) {
+  const cameras = [
+    { id: "CAM-01", label: "Main Gate", status: "online" },
+    { id: "CAM-02", label: "Perimeter East", status: "online" },
+    { id: "CAM-03", label: "Perimeter West", status: "online" },
+    { id: "CAM-04", label: "Loading Dock", status: "offline" },
+  ];
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#26313D]">
+        <span className="text-[13px] font-semibold">Multi-Camera Control</span>
+        <button
+          onClick={() => setScreen("command")}
+          className="text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer"
+        >
+          ← Command Center
+        </button>
+      </div>
+
+      <div className="flex-1 grid grid-cols-2 gap-3 p-4 overflow-auto">
+        {cameras.map((cam) => (
+          <div
+            key={cam.id}
+            onClick={() => setScreen("details")}
+            className="relative bg-[#0F1620] border border-[#26313D] rounded-lg aspect-video flex items-center justify-center cursor-pointer hover:border-[#35C759] transition-colors"
+          >
+            <span className="absolute top-2 left-2 text-[10px] font-semibold text-[#F5F7FA]">
+              {cam.id}
+            </span>
+            <span className="absolute top-2 right-2 flex items-center gap-1">
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ background: cam.status === "online" ? "#35C759" : "#3A4552" }}
+              />
+              <span className="text-[10px] text-[#8A89A7]">{cam.status}</span>
+            </span>
+            <span className="text-[11px] text-[#8A89A7]">{cam.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function SettingsScreen({
+  setScreen,
+  onOpenDashboard,
+}: {
+  setScreen: (s: Screen) => void;
+  onOpenDashboard: () => void;
+}) {
+  const [sensitivity, setSensitivity] = useState(85);
+  const [alerts, setAlerts] = useState({
+    intrusion: true,
+    loitering: true,
+    fenceBreach: true,
+    cameraOffline: false,
+  });
+
+  const cameras = [
+    { id: "CAM-01", label: "Main Gate", status: "online" },
+    { id: "CAM-02", label: "Perimeter East", status: "online" },
+    { id: "CAM-03", label: "Perimeter West", status: "online" },
+    { id: "CAM-04", label: "Loading Dock", status: "offline" },
+  ];
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#26313D]">
+        <span className="text-[13px] font-semibold">Settings</span>
+        <button
+          onClick={() => setScreen("command")}
+          className="text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer"
+        >
+          ← Command Center
+        </button>
+      </div>
+
+      <div className="flex-1 p-6 space-y-6 overflow-auto">
+        <button
+          onClick={onOpenDashboard}
+          className="text-[12px] bg-[#111820] border border-[#26313D] rounded-lg px-4 py-2.5 text-[#F5F7FA] hover:border-[#35C759] transition-colors cursor-pointer"
+        >
+          View System Dashboard
+        </button>
+
+        {/* Camera & Detection */}
+        <section className="space-y-3">
+          <h3 className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#576475]">
+            Camera & Detection
+          </h3>
+          <div className="bg-[#111820] border border-[#26313D] rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-[#F5F7FA]">Detection Sensitivity</span>
+              <span className="text-[12px] font-semibold text-[#35C759]">{sensitivity}%</span>
+            </div>
+            <input
+              type="range"
+              min={50}
+              max={99}
+              value={sensitivity}
+              onChange={(e) => setSensitivity(Number(e.target.value))}
+              className="w-full accent-[#35C759]"
+            />
+          </div>
+
+          <div className="bg-[#111820] border border-[#26313D] rounded-lg divide-y divide-[#26313D]">
+            {cameras.map((cam) => (
+              <div key={cam.id} className="flex items-center justify-between px-4 py-2.5">
+                <div>
+                  <div className="text-[12px] text-[#F5F7FA]">{cam.id}</div>
+                  <div className="text-[10px] text-[#8A89A7]">{cam.label}</div>
+                </div>
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: cam.status === "online" ? "#35C759" : "#3A4552" }}
+                  />
+                  <span className="text-[10px] text-[#8A89A7]">{cam.status}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Alerts & Notifications */}
+        <section className="space-y-3">
+          <h3 className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#576475]">
+            Alerts & Notifications
+          </h3>
+          <div className="bg-[#111820] border border-[#26313D] rounded-lg divide-y divide-[#26313D]">
+            {Object.entries(alerts).map(([key, value]) => (
+              <label
+                key={key}
+                className="flex items-center justify-between px-4 py-2.5 cursor-pointer"
+              >
+                <span className="text-[12px] text-[#F5F7FA] capitalize">
+                  {key.replace(/([A-Z])/g, " $1")}
+                </span>
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={() =>
+                    setAlerts((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
+                  }
+                  className="accent-[#35C759] w-4 h-4"
+                />
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* About */}
+        <section className="space-y-3">
+          <h3 className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#576475]">
+            About
+          </h3>
+          <div className="bg-[#111820] border border-[#26313D] rounded-lg px-4 py-3 text-[11px] text-[#8A89A7]">
+            PheNex Intelligent Border Video Analytics — v1.0.0
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+function EventPlaybackControls() {
+  const DURATION = 60; // seconds
+  const [currentTime, setCurrentTime] = useState(32);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const t = setInterval(() => {
+      setCurrentTime((prev) => {
+        const next = prev + 0.2 * speed;
+        if (next >= DURATION) {
+          setIsPlaying(false);
+          return DURATION;
+        }
+        return next;
+      });
+    }, 200);
+    return () => clearInterval(t);
+  }, [isPlaying, speed]);
+
+  const format = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  const jump = (delta: number) => {
+    setCurrentTime((prev) => Math.min(DURATION, Math.max(0, prev + delta)));
+  };
+
+  const progress = (currentTime / DURATION) * 100;
+  // Person marker moves left→right across the frame as time advances
+  const personX = 15 + (currentTime / DURATION) * 70; // 15% to 85%
+
+  return (
+    <div className="bg-[#111820] border border-[#26313D] rounded-lg overflow-hidden">
+      {/* Simulated event frame */}
+      <div className="relative h-64 bg-[#0B0F14] overflow-hidden">
+        <div className="absolute top-2 left-2 text-[10px] font-semibold text-[#576475]">
+          CAM-01 — EVENT REPLAY
+        </div>
+        <div className="absolute top-2 right-2 text-[10px] font-semibold text-[#35C759]">
+          {isPlaying ? `● PLAYING ${speed}x` : "⏸ PAUSED"}
+        </div>
+
+        {/* Person marker that moves with currentTime */}
+        <div
+          className="absolute bottom-10 w-6 h-14 bg-[#FF4D4F]/30 border-2 border-[#FF4D4F] rounded transition-all duration-150 ease-linear flex items-end justify-center"
+          style={{ left: `${personX}%`, transform: "translateX(-50%)" }}
+        >
+          <span className="absolute -top-5 text-[9px] font-bold text-[#FF4D4F] whitespace-nowrap">
+            PERSON #07
+          </span>
+        </div>
+
+        {/* Ground line */}
+        <div className="absolute bottom-8 left-0 right-0 h-px bg-[#26313D]" />
+      </div>
+
+      {/* Scrub bar */}
+      <div className="px-4 pt-3">
+        <input
+          type="range"
+          min={0}
+          max={DURATION}
+          step={0.1}
+          value={currentTime}
+          onChange={(e) => {
+            setCurrentTime(Number(e.target.value));
+            setIsPlaying(false);
+          }}
+          className="w-full accent-[#35C759] cursor-pointer"
+        />
+        <div className="flex items-center justify-between text-[10px] text-[#8A89A7] mt-1">
+          <span>{format(currentTime)}</span>
+          <span>{format(DURATION)}</span>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-4 px-4 py-3 border-t border-[#26313D] mt-2">
+        <button
+          onClick={() => jump(-10)}
+          className="text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer text-[13px] font-semibold"
+          title="Rewind 10s"
+        >
+          ⏪ 10s
+        </button>
+
+        <button
+          onClick={() => setIsPlaying((p) => !p)}
+          className="w-10 h-10 rounded-full bg-[#35C759] hover:bg-[#2EA84F] transition-colors cursor-pointer flex items-center justify-center text-[#0B0F14] text-[15px] font-bold"
+        >
+          {isPlaying ? "⏸" : "▶"}
+        </button>
+
+        <button
+          onClick={() => jump(10)}
+          className="text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer text-[13px] font-semibold"
+          title="Forward 10s"
+        >
+          10s ⏩
+        </button>
+
+        <button
+          onClick={() => setSpeed((s) => (s === 1 ? 2 : s === 2 ? 4 : 1))}
+          className="ml-4 text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] border border-[#26313D] rounded px-2 py-1 transition-colors cursor-pointer"
+        >
+          {speed}x
+        </button>
+        <button
+          onClick={() => { setCurrentTime(0); setIsPlaying(true); }}
+          className="text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] border border-[#26313D] rounded px-2 py-1 transition-colors cursor-pointer"
+          title="Restart"
+        >
+          ↺ Restart
+        </button>
+      </div>
+    </div>
+  );
+}
+function SystemDashboardPanel({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const stats = [
+    { label: "System Uptime", value: "14d 6h 22m" },
+    { label: "CPU Load", value: "23%" },
+    { label: "Memory Usage", value: "1.8 / 4 GB" },
+    { label: "Active Cameras", value: "3 / 4" },
+    { label: "Events Today", value: "12" },
+    { label: "Last Sync", value: "2 min ago" },
+  ];
+
+  return (
+    <>
+      {/* Backdrop */}
+      {open && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        />
+      )}
+
+      {/* Slide-in panel */}
+      <div
+        className={`fixed top-0 right-0 h-full w-80 bg-[#111820] border-l border-[#26313D] z-50 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"
+          }`}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#26313D]">
+          <span className="text-[13px] font-semibold">System Dashboard</span>
+          <button
+            onClick={onClose}
+            className="text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="flex items-center justify-between bg-[#0F1620] border border-[#26313D] rounded-lg px-3 py-2.5"
+            >
+              <span className="text-[11px] text-[#8A89A7]">{stat.label}</span>
+              <span className="text-[12px] font-semibold text-[#F5F7FA]">
+                {stat.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
 
 // ─── SCREEN 2: LIVE SURVEILLANCE ──────────────────────────────────────────────
 
@@ -657,6 +1017,7 @@ function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
   const [fencePoints, setFencePoints] = useState<{ x: number; y: number }[]>([]);
   const [fenceAlert, setFenceAlert] = useState(false);
   const [fenceDrawn, setFenceDrawn] = useState(false);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   return (
     <div className="flex gap-4 p-4 h-full overflow-hidden">
       <Card className="flex-[3] overflow-hidden flex flex-col min-w-0 min-h-0">
@@ -670,12 +1031,11 @@ function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
             <span className="text-[10px] font-bold tracking-widest text-[#FF4D4F]">LIVE</span>
           </div>
         </CardHeader>
-        <div className="flex-1 overflow-hidden min-h-0">
+        <div className="flex-1 overflow-hidden min-h-0" style={{ minHeight: 400 }}>
           <div
-            className="relative z=10 flex-1 overflow-hidden min-h-0 cursor-crosshair"
+            className="relative z-10 h-full w-full overflow-hidden cursor-crosshair"
             onPointerDown={(e) => {
               if (!drawingFence) return;
-              if (fencePoints.length >= 2) return;
 
               const rect = e.currentTarget.getBoundingClientRect();
 
@@ -686,38 +1046,53 @@ function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
 
               setFencePoints((prev) => [...prev, point]);
 
-              if (fencePoints.length === 1) {
-                setDrawingFence(false);
-              }
             }}
+            onDoubleClick={() => setDrawingFence(false)}
+            onPointerMove={(e) => {
+              if (draggingIndex === null) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const newX = ((e.clientX - rect.left) / rect.width) * 100;
+              const newY = ((e.clientY - rect.top) / rect.height) * 100;
+              setFencePoints((prev) =>
+                prev.map((p, i) => (i === draggingIndex ? { x: newX, y: newY } : p))
+              );
+            }}
+            onPointerUp={() => setDraggingIndex(null)}
           >
             <div className="pointer-events-none absolute inset-0">
               <CCTVFeed showPerson />
             </div>
             {fencePoints.length > 0 && (
-              <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                {fencePoints.length === 2 && (
-                  <line
-                    x1={`${fencePoints[0].x}%`}
-                    y1={`${fencePoints[0].y}%`}
-                    x2={`${fencePoints[1].x}%`}
-                    y2={`${fencePoints[1].y}%`}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                {fencePoints.length > 1 && (
+                  <polyline
+                    points={fencePoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
                     stroke="#00F0FF"
-                    strokeWidth="4"
-                    strokeDasharray="10 6"
+                    strokeWidth="0.4"
+                    strokeDasharray="2.5 2"
                   />
-
-
                 )}
 
                 {fencePoints.map((point, index) => (
-                  <circle
+                  <ellipse
                     key={index}
                     cx={`${point.x}%`}
                     cy={`${point.y}%`}
-                    r="8"
+                    rx="0.7"
+                    ry="1.5"
                     fill="#00F0FF"
+                    style={{ pointerEvents: "all", cursor: "grab" }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      setDraggingIndex(index);
+                    }}
                   />
+
                 ))}
               </svg>
             )}
@@ -1150,31 +1525,9 @@ function EventDetails({ setScreen }: { setScreen: (s: Screen) => void }) {
           <div className="flex-1 overflow-hidden min-h-0">
             <CCTVFeed showPerson showTracking showZone zoneBreached />
           </div>
+          <EventPlaybackControls />
         </Card>
 
-        {/* Workflow strip */}
-        <Card className="flex-shrink-0">
-          <div className="px-5 py-3 flex items-center justify-between">
-            {[
-              { step: "DETECT", desc: "Object identified" },
-              { step: "TRACK", desc: "Path recorded" },
-              { step: "ANALYZE", desc: "Zone crossed" },
-              { step: "ALERT", desc: "Operator notified" },
-            ].map(({ step, desc }, i, arr) => (
-              <div key={step} className="flex items-center gap-3">
-                <div className="text-center">
-                  <div className="text-[10px] font-bold tracking-[1.5px] text-[#35C759] mb-0.5">
-                    {step}
-                  </div>
-                  <div className="text-[9px] text-[#576475]">{desc}</div>
-                </div>
-                {i < arr.length - 1 && (
-                  <ArrowRight size={12} className="text-[#26313D] flex-shrink-0" />
-                )}
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
 
       {/* Right */}
@@ -1262,6 +1615,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("command");
   const [time, setTime] = useState(new Date());
   const [showSplash, setShowSplash] = useState(true);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1290,16 +1644,21 @@ export default function App() {
 
       {showSplash && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F14]">
-          <h1 className="text-4xl font-bold text-white">PheNex</h1>
+          <h1 className="text-4xl font-bold text-white">AVEIS</h1>
         </div>
       )}
 
 
       <div
-        className="flex h-screen overflow-hidden"
+        className="flex min-h-screen overflow-y-auto"
         style={{ background: "#0B0F14", color: "#F5F7FA", fontFamily: "Inter, sans-serif" }}
       >
-        <Sidebar screen={screen} setScreen={setScreen} />
+        <Sidebar
+          screen={screen}
+          setScreen={setScreen}
+          showDashboard={showDashboard}
+          onCloseDashboard={() => setShowDashboard(false)}
+        />
 
         <div className="flex flex-col flex-1 min-w-0">
           <TopBar screen={screen} timeStr={timeStr} dateStr={dateStr} />
@@ -1311,6 +1670,10 @@ export default function App() {
             {screen === "breach" && <VirtualFenceBreach setScreen={setScreen} />}
             {screen === "alert" && <SecurityAlert setScreen={setScreen} />}
             {screen === "details" && <EventDetails setScreen={setScreen} />}
+            {screen === "multi-camera" && <MultiCameraGrid setScreen={setScreen} />}
+            {screen === "settings" && (
+              <SettingsScreen setScreen={setScreen} onOpenDashboard={() => setShowDashboard(true)} />
+            )}
           </div>
         </div>
       </div>
