@@ -531,6 +531,29 @@ function TopBar({
 // ─── SCREEN 1: COMMAND CENTER ─────────────────────────────────────────────────
 
 function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
+  const recentEvents = [
+    {
+      time: "02:14:32",
+      event: "Person detected",
+      cam: "CAM-01",
+      status: "MONITORING",
+      v: "warning" as const,
+    },
+    {
+      time: "02:11:08",
+      event: "Vehicle detected",
+      cam: "CAM-02",
+      status: "NORMAL",
+      v: "neutral" as const,
+    },
+    {
+      time: "01:58:44",
+      event: "Zone activity",
+      cam: "CAM-01",
+      status: "REVIEW",
+      v: "warning" as const,
+    },
+  ];
   return (
     <div className="flex gap-4 p-4 h-full overflow-hidden">
       {/* Left */}
@@ -561,14 +584,10 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
         <Card className="flex-shrink-0">
           <CardHeader>
             <Label>Recent Events</Label>
-            <span className="text-[10px] text-[#576475]">3 events today</span>
+            <span className="text-[10px] text-[#576475]">{recentEvents.length} events today</span>
           </CardHeader>
           <div className="divide-y divide-[#26313D]">
-            {[
-              { time: "02:14:32", event: "Person detected", cam: "CAM-01", status: "MONITORING", v: "warning" as const },
-              { time: "02:11:08", event: "Vehicle detected", cam: "CAM-02", status: "NORMAL", v: "neutral" as const },
-              { time: "01:58:44", event: "Zone activity", cam: "CAM-01", status: "REVIEW", v: "warning" as const },
-            ].map((ev, i) => (
+            {recentEvents.map((ev, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between px-4 py-2.5 hover:bg-[#161E27] transition-colors"
@@ -582,7 +601,8 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
                 </div>
                 <Badge label={ev.status} variant={ev.v} />
               </div>
-            ))}
+            ))
+            }
           </div>
         </Card>
       </div>
@@ -650,12 +670,12 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
           </CardHeader>
           <div className="px-4 py-3 flex items-center gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-[#35C759]">02</div>
+              <div className="text-3xl font-bold text-[#35C759]">03</div>
               <div className="text-[9px] font-semibold tracking-[1.5px] text-[#576475]">ONLINE</div>
             </div>
             <div className="w-px self-stretch bg-[#26313D]" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-[#3a4552]">00</div>
+              <div className="text-3xl font-bold text-[#3a4552]">01</div>
               <div className="text-[9px] font-semibold tracking-[1.5px] text-[#576475]">OFFLINE</div>
             </div>
           </div>
@@ -664,7 +684,7 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
     </div>
   );
 }
-function MultiCameraGrid({ setScreen }: { setScreen: (s: Screen) => void }) {
+function MultiCameraGrid({ setScreen, setSelectedCamera }: { setScreen: (s: Screen) => void; setSelectedCamera: (id: string) => void }) {
   const cameras = [
     { id: "CAM-01", label: "Main Gate", status: "online" },
     { id: "CAM-02", label: "Perimeter East", status: "online" },
@@ -688,7 +708,7 @@ function MultiCameraGrid({ setScreen }: { setScreen: (s: Screen) => void }) {
         {cameras.map((cam) => (
           <div
             key={cam.id}
-            onClick={() => setScreen("details")}
+            onClick={() => { setSelectedCamera(cam.id); setScreen("details"); }}
             className="relative bg-[#0F1620] border border-[#26313D] rounded-lg aspect-video flex items-center justify-center cursor-pointer hover:border-[#35C759] transition-colors"
           >
             <span className="absolute top-2 left-2 text-[10px] font-semibold text-[#F5F7FA]">
@@ -934,6 +954,7 @@ function EventPlaybackControls() {
           10s ⏩
         </button>
 
+
         <button
           onClick={() => setSpeed((s) => (s === 1 ? 2 : s === 2 ? 4 : 1))}
           className="ml-4 text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] border border-[#26313D] rounded px-2 py-1 transition-colors cursor-pointer"
@@ -1150,7 +1171,7 @@ function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
               <div className="space-y-2.5">
                 {[
                   { label: "Object Type", val: "PERSON" },
-                  { label: "Camera", val: "CAM-01" },
+                  { label: "Camera", val: "cameraId" },
                   { label: "Timestamp", val: "02:14:32" },
                   { label: "Status", val: "ACTIVE" },
                 ].map(({ label, val }) => (
@@ -1195,6 +1216,9 @@ function LiveSurveillance({ setScreen }: { setScreen: (s: Screen) => void }) {
           </Card>
         </div>
       </Card >
+      <div className="mt-6 border border-[#26313D] rounded-lg p-4 bg-[#111820]">
+        <h3 className="text-[#F5F7FA] text-sm font-bold mb-3">Face Recognition</h3>
+      </div>
     </div >
   );
 }
@@ -1499,11 +1523,11 @@ function SecurityAlert({ setScreen }: { setScreen: (s: Screen) => void }) {
       </div>
     </div>
   );
+
 }
 
 // ─── SCREEN 6: EVENT DETAILS ──────────────────────────────────────────────────
-
-function EventDetails({ setScreen }: { setScreen: (s: Screen) => void }) {
+function EventDetails({ setScreen, cameraId }: { setScreen: (s: Screen) => void; cameraId?: string }) {
   return (
     <div className="flex gap-4 p-4 h-full overflow-hidden">
       {/* Left */}
@@ -1511,7 +1535,7 @@ function EventDetails({ setScreen }: { setScreen: (s: Screen) => void }) {
         <Card className="flex-1 overflow-hidden flex flex-col min-h-0">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Label>Event View — CAM-01</Label>
+              <Label>Event View — {cameraId}</Label>
               <Badge label="INTRUSION — OPEN" variant="critical" />
             </div>
             <button
@@ -1613,6 +1637,7 @@ function EventDetails({ setScreen }: { setScreen: (s: Screen) => void }) {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("command");
+  const [selectedCamera, setSelectedCamera] = useState("CAM-01");
   const [time, setTime] = useState(new Date());
   const [showSplash, setShowSplash] = useState(true);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -1648,7 +1673,6 @@ export default function App() {
         </div>
       )}
 
-
       <div
         className="flex min-h-screen overflow-y-auto"
         style={{ background: "#0B0F14", color: "#F5F7FA", fontFamily: "Inter, sans-serif" }}
@@ -1669,8 +1693,8 @@ export default function App() {
             {screen === "tracking" && <ObjectTracking setScreen={setScreen} />}
             {screen === "breach" && <VirtualFenceBreach setScreen={setScreen} />}
             {screen === "alert" && <SecurityAlert setScreen={setScreen} />}
-            {screen === "details" && <EventDetails setScreen={setScreen} />}
-            {screen === "multi-camera" && <MultiCameraGrid setScreen={setScreen} />}
+            {screen === "details" && <EventDetails setScreen={setScreen} cameraId={selectedCamera} />}
+            {screen === "multi-camera" && <MultiCameraGrid setScreen={setScreen} setSelectedCamera={setSelectedCamera} />}
             {screen === "settings" && (
               <SettingsScreen setScreen={setScreen} onOpenDashboard={() => setShowDashboard(true)} />
             )}
