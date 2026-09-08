@@ -6,7 +6,7 @@ import {
   Eye, MapPin, Crosshair,
 } from "lucide-react";
 
-type Screen = "command" | "surveillance" | "tracking" | "breach" | "alert" | "details" | "settings" | "multi-camera";
+type Screen = "command" | "surveillance" | "tracking" | "breach" | "alert" | "details" | "settings" | "multi-camera" | "health";
 
 // ─── ATOMS ────────────────────────────────────────────────────────────────────
 
@@ -23,7 +23,46 @@ function StatusDot({ color, pulse = false }: { color: string; pulse?: boolean })
     </span>
   );
 }
+interface HealthRow {
+  label: string;
+  status: "OK" | "WARN" | "ERROR";
+}
 
+const statusColor: Record<HealthRow["status"], string> = {
+  OK: "text-emerald-400",
+  WARN: "text-amber-400",
+  ERROR: "text-red-400",
+};
+
+function CameraHealthBadge({
+  camId,
+  online,
+  rows,
+}: {
+  camId: string;
+  online: boolean;
+  rows: HealthRow[];
+}) {
+  return (
+    <div className="absolute bottom-3 left-3 w-40 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.35)] p-3 text-xs">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-semibold text-white/90">{camId}</span>
+        <span className={`flex items-center gap-1 ${online ? "text-emerald-400" : "text-red-400"}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+          {online ? "ONLINE" : "OFFLINE"}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center justify-between text-white/70">
+            <span>{r.label}</span>
+            <span className={statusColor[r.status]}>{r.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 function Badge({
   label,
   variant,
@@ -389,7 +428,8 @@ const NAV = [
   { id: "command" as Screen, label: "Command Center", Icon: LayoutDashboard },
   { id: "surveillance" as Screen, label: "Live Surveillance", Icon: Video },
   { id: "alert" as Screen, label: "Events", Icon: Bell },
-  { id: "multi-camera" as Screen, label: "System Health", Icon: Activity },
+  { id: "multi-camera" as Screen, label: "Multi-Camera control", Icon: Activity },
+  { id: "health" as Screen, label: "System Health", Icon: Activity },
 ];
 
 function Sidebar({
@@ -420,12 +460,12 @@ function Sidebar({
         <div className="flex items-center gap-2.5 mb-1.5">
           <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
             <img
-              src="/favicon.svg"
+              src="/PheNex-img.png.jpeg"
               alt="AVEIS"
-              className="w-8 h-8 object-contain"
+              className="w-16 h-16 object-contain mix-blend-screen"
             />
           </div>
-          <span className="text-[15px] font-bold text-[#F5F7FA] tracking-tight">AVEIS</span>
+          <img src="/aveis-font.png.jpeg" alt="AVEIS" className="h-10 object-contain mix-blend-screen" />
         </div>
         <p className="text-[8px] font-semibold tracking-[1.8px] text-[#576475] uppercase leading-snug pl-[34px]">
           Intelligent Border
@@ -484,6 +524,7 @@ const TITLES: Record<Screen, string> = {
   details: "Event Details",
   settings: "Settings",
   "multi-camera": "Multi-Camera View",
+  health: "System Health",
 };
 
 function TopBar({
@@ -518,10 +559,6 @@ function TopBar({
           <span className="text-[10px] font-bold tracking-[1.5px] text-[#35C759]">
             SYSTEM ONLINE
           </span>
-        </div>
-        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#161E27] border border-[#26313D]">
-          <User size={11} className="text-[#8B98A7]" />
-          <span className="text-[11px] font-medium text-[#F5F7FA]">OPR-01</span>
         </div>
       </div>
     </div>
@@ -651,7 +688,7 @@ function CommandCenter({ setScreen }: { setScreen: (s: Screen) => void }) {
         >
           <Card>
             <CardHeader>
-              <Label>System Health</Label>
+              <Label>Multi-Camera control</Label>
               <CheckCircle size={13} className="text-[#35C759]" />
             </CardHeader>
             <div className="p-4 space-y-3 flex-1">
@@ -709,7 +746,7 @@ function MultiCameraGrid({ setScreen, setSelectedCamera }: { setScreen: (s: Scre
           <div
             key={cam.id}
             onClick={() => { setSelectedCamera(cam.id); setScreen("details"); }}
-            className="relative bg-[#0F1620] border border-[#26313D] rounded-lg aspect-video flex items-center justify-center cursor-pointer hover:border-[#35C759] transition-colors"
+            className="relative overflow-hidden bg-[#0F1620] border border-[#26313D] rounded-lg aspect-video flex items-center justify-center cursor-pointer"
           >
             <span className="absolute top-2 left-2 text-[10px] font-semibold text-[#F5F7FA]">
               {cam.id}
@@ -722,6 +759,113 @@ function MultiCameraGrid({ setScreen, setSelectedCamera }: { setScreen: (s: Scre
               <span className="text-[10px] text-[#8A89A7]">{cam.status}</span>
             </span>
             <span className="text-[11px] text-[#8A89A7]">{cam.label}</span>
+            <CameraHealthBadge
+              camId={cam.id}
+              online={cam.status === "online"}
+              rows={[
+                { label: "CCTV Stream", status: "OK" },
+                { label: "AI Engine", status: "OK" },
+                { label: "Event Engine", status: "OK" },
+                { label: "Database Sync", status: "OK" },
+              ]}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function SystemHealthScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
+  const cameraHealth = [
+    {
+      id: "CAM-01",
+      label: "Main Gate",
+      status: "online",
+      metrics: [
+        { label: "CCTV Stream", ok: true },
+        { label: "AI Engine", ok: true },
+        { label: "Event Engine", ok: true },
+        { label: "Database Sync", ok: true },
+      ],
+    },
+    {
+      id: "CAM-02",
+      label: "Perimeter East",
+      status: "online",
+      metrics: [
+        { label: "CCTV Stream", ok: true },
+        { label: "AI Engine", ok: true },
+        { label: "Event Engine", ok: true },
+        { label: "Database Sync", ok: true },
+      ],
+    },
+    {
+      id: "CAM-03",
+      label: "Perimeter West",
+      status: "online",
+      metrics: [
+        { label: "CCTV Stream", ok: true },
+        { label: "AI Engine", ok: true },
+        { label: "Event Engine", ok: true },
+        { label: "Database Sync", ok: true },
+      ],
+    },
+    {
+      id: "CAM-04",
+      label: "Loading Dock",
+      status: "offline",
+      metrics: [
+        { label: "CCTV Stream", ok: false },
+        { label: "AI Engine", ok: false },
+        { label: "Event Engine", ok: false },
+        { label: "Database Sync", ok: true },
+      ],
+    },
+  ];
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#26313D]">
+        <span className="text-[13px] font-semibold">System Health — Per Camera</span>
+        <button
+          onClick={() => setScreen("command")}
+          className="text-[11px] text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer"
+        >
+          ← Command Center
+        </button>
+      </div>
+
+      <div className="flex-1 p-4 grid grid-cols-2 gap-4 overflow-auto">
+        {cameraHealth.map((cam) => (
+          <div key={cam.id} className="border border-[#26313D] rounded-lg bg-[#111820] overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#26313D]">
+              <div>
+                <div className="text-[12px] font-bold text-[#F5F7FA]">{cam.id}</div>
+                <div className="text-[10px] text-[#8A89A7]">{cam.label}</div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: cam.status === "online" ? "#35C759" : "#FF4D4F" }}
+                />
+                <span
+                  className="text-[10px] font-semibold"
+                  style={{ color: cam.status === "online" ? "#35C759" : "#FF4D4F" }}
+                >
+                  {cam.status.toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <div className="p-3 space-y-2">
+              {cam.metrics.map((m) => (
+                <div key={m.label} className="flex items-center justify-between">
+                  <span className="text-[11px] text-[#8A89A7]">{m.label}</span>
+                  <span className="text-[10px] font-semibold" style={{ color: m.ok ? "#35C759" : "#FF4D4F" }}>
+                    {m.ok ? "OK" : "DOWN"}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -933,7 +1077,7 @@ function EventPlaybackControls() {
       <div className="flex items-center justify-center gap-4 px-4 py-3 border-t border-[#26313D] mt-2">
         <button
           onClick={() => jump(-10)}
-          className="text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer text-[13px] font-semibold"
+          className="text-[#8A89A7] hover:text-[#F5F7FA] hover:border-[#F5F7FA] transition-colors cursor-pointer text-[13px] font-semibold border border-[#26313D] rounded-full px-3 py-1.5"
           title="Rewind 10s"
         >
           ⏪ 10s
@@ -948,7 +1092,9 @@ function EventPlaybackControls() {
 
         <button
           onClick={() => jump(10)}
-          className="text-[#8A89A7] hover:text-[#F5F7FA] transition-colors cursor-pointer text-[13px] font-semibold"
+          className="text-[#8A89A7] hover:text-[#F5F7FA] hover:border-[#F5F7FA] transition-colors cursor-pointer text-[13px] font-semibold border border-[#26313D] rounded-full px-3 py-1.5"
+
+
           title="Forward 10s"
         >
           10s ⏩
@@ -1663,13 +1809,12 @@ export default function App() {
     year: "numeric",
   });
 
-
   return (
     <>
 
       {showSplash && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F14]">
-          <h1 className="text-4xl font-bold text-white">AVEIS</h1>
+          <img src="/aveis-logo.png.jpeg" alt="AVEIS" className="w-96 mix-blend-screen" />
         </div>
       )}
 
@@ -1695,6 +1840,7 @@ export default function App() {
             {screen === "alert" && <SecurityAlert setScreen={setScreen} />}
             {screen === "details" && <EventDetails setScreen={setScreen} cameraId={selectedCamera} />}
             {screen === "multi-camera" && <MultiCameraGrid setScreen={setScreen} setSelectedCamera={setSelectedCamera} />}
+            {screen === "health" && <SystemHealthScreen setScreen={setScreen} />}
             {screen === "settings" && (
               <SettingsScreen setScreen={setScreen} onOpenDashboard={() => setShowDashboard(true)} />
             )}

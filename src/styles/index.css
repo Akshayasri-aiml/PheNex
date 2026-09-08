@@ -58,3 +58,203 @@
 .animate-neonTrail {
     animation: neonTrail 1.8s ease-out forwards;
 }
+
+/* =========================================
+   PHENEX OPERATOR LOGIN
+   ========================================= */
+
+.login-page {
+    min-height: 100vh;
+    width: 100%;
+    background:
+        radial-gradient(circle at 50% 35%, rgba(30, 100, 120, 0.18), transparent 35%),
+        linear-gradient(135deg, #070b10 0%, #0b1118 50%, #05080c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    color: #e7f4f7;
+}
+
+.login-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: rgba(0, 210, 190, 0.06);
+    filter: blur(100px);
+    pointer-events: none;
+}
+
+.login-card {
+    width: min(440px, calc(100% - 40px));
+    padding: 38px;
+    border: 1px solid rgba(100, 210, 220, 0.25);
+    border-radius: 18px;
+    background: rgba(12, 20, 27, 0.94);
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    position: relative;
+    z-index: 2;
+}
+
+.login-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.logo-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #16c7bd, #187a91);
+    color: white;
+    font-size: 28px;
+    font-weight: 800;
+    box-shadow: 0 0 25px rgba(22, 199, 189, 0.25);
+}
+
+.login-logo h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: 2px;
+}
+
+.login-logo p {
+    margin: 4px 0 0;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #77939c;
+}
+
+.login-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #55e8a0;
+    margin-bottom: 28px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #55e8a0;
+    box-shadow: 0 0 10px #55e8a0;
+}
+
+.login-card h2 {
+    margin: 0;
+    font-size: 25px;
+    letter-spacing: 1px;
+}
+
+.login-subtitle {
+    color: #718891;
+    font-size: 13px;
+    margin: 8px 0 28px;
+}
+
+.login-card form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-card label {
+    color: #7f9ba4;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    margin-top: 17px;
+}
+
+.login-card input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #080e14;
+    border: 1px solid #263a43;
+    border-radius: 8px;
+    color: #e8f5f7;
+    padding: 13px 14px;
+    outline: none;
+    font-size: 14px;
+}
+
+.login-card input:focus {
+    border-color: #1bc7c0;
+    box-shadow: 0 0 0 2px rgba(27, 199, 192, 0.1);
+}
+
+.login-card input::placeholder {
+    color: #455b63;
+}
+
+.login-error {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    background: rgba(255, 70, 70, 0.08);
+    border: 1px solid rgba(255, 70, 70, 0.25);
+    color: #ff7777;
+    font-size: 12px;
+}
+
+.login-button {
+    margin-top: 25px;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #16bfb8, #168aa0);
+    color: white;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.login-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.12);
+    box-shadow: 0 8px 25px rgba(22, 191, 184, 0.2);
+}
+
+.demo-accounts {
+    margin-top: 25px;
+    padding-top: 18px;
+    border-top: 1px solid #203039;
+}
+
+.demo-accounts>p {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: #607a83;
+    margin-bottom: 10px;
+}
+
+.demo-accounts div {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    color: #718991;
+    font-size: 11px;
+}
+
+.demo-accounts span:last-child {
+    color: #46c8c0;
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 25px;
+    color: #465c64;
+    font-size: 9px;
+}

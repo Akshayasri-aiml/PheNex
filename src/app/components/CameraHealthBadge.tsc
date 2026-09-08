@@ -1,0 +1,93 @@
+// CameraHealthBadge.tsx
+interface HealthRow {
+  label: string;
+  status: "OK" | "WARN" | "ERROR";
+}
+
+interface CameraHealthBadgeProps {
+  camId: string;
+  online: boolean;
+  rows: HealthRow[];
+}
+
+const statusColor = {
+  OK: "text-emerald-400",
+  WARN: "text-amber-400",
+  ERROR: "text-red-400",
+};
+
+export function CameraHealthBadge({ camId, online, rows }: CameraHealthBadgeProps) {
+  return (
+    <div
+      className="
+        absolute top-3 right-3 w-40
+        rounded-xl border border-white/10
+        bg-white/5 backdrop-blur-md
+        shadow-[0_4px_20px_rgba(0,0,0,0.35)]
+        p-3 text-xs
+      "
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-semibold text-white/90">{camId}</span>
+        <span className={`flex items-center gap-1 ${online ? "text-emerald-400" : "text-red-400"}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+          {online ? "ONLINE" : "OFFLINE"}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center justify-between text-white/70">
+            <span>{r.label}</span>
+            <span className={statusColor[r.status]}>{r.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}// CameraHealthBadge.tsx
+interface HealthRow {
+  label: string;
+  status: "OK" | "WARN" | "ERROR";
+}
+
+interface CameraHealthBadgeProps {
+  camId: string;
+  online: boolean;
+  rows: HealthRow[];
+}
+
+const statusColor = {
+  OK: "text-emerald-400",
+  WARN: "text-amber-400",
+  ERROR: "text-red-400",
+};
+
+export function CameraHealthBadge({ camId, online, rows }: CameraHealthBadgeProps) {
+  return (
+    <div
+      className="
+        absolute bottom-3 left-3 w-40
+        rounded-xl border border-white/10
+        bg-white/5 backdrop-blur-md
+        shadow-[0_4px_20px_rgba(0,0,0,0.35)]
+        p-3 text-xs
+      "
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-semibold text-white/90">{camId}</span>
+        <span className={`flex items-center gap-1 ${online ? "text-emerald-400" : "text-red-400"}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+          {online ? "ONLINE" : "OFFLINE"}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-center justify-between text-white/70">
+            <span>{r.label}</span>
+            <span className={statusColor[r.status]}>{r.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
